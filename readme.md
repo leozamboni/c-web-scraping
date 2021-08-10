@@ -5,16 +5,12 @@ Web scraping with C
 gcc -o scraping scraping.c
 ```
 ## Run
-If you have GNU Wget
 ```
 ./scraping <link>
 ```
-[if not](https://www.gnu.org/software/wget/), comment line
-```
-#define _ENABLE_WGET_ 
-```
 ## Tag
-For get specific tag, remove comment of this like
+For get specific tag
 ```
-//#define HTML_TAG "<tag>"
+#define HTML_TAG "<tag>"
+#define HTML_TAG_END "</tag>"
 ```

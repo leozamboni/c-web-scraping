@@ -2,38 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
-#define _ENABLE_WGET_ 
-
-//#define HTML_TAG "<html>"
-
-#define HTML "index.html"
-
-#ifdef _ENABLE_WGET_  
-  #define WGET "wget --tries=45 "
-#endif
-
-typedef struct node Node;
-
-struct node {
-  char value;
-  Node *next;
-};
-
-typedef struct list List; 
-
-struct list {
-  Node *nodes;
-  Node *head;
-};
-
-typedef char Type;
-
-typedef struct vector {
-    size_t size;
-    size_t capacity;
-    Type *array;
-} Vector;
+#include "scraping.h" 
 
 List *create_list(void) {
   List *l = (List *) malloc(sizeof(List));
@@ -79,73 +48,73 @@ char *get_str(List *l) {
 }
 
 void got_file(char *argv) {
-  char *cmd = (char *) malloc(strlen(WGET) + strlen(argv));
-  strcat(strcpy(cmd,WGET),argv);
+  char *cmd = (char *) malloc(strlen(CURL) + strlen(argv));
+  strcat(strcpy(cmd,CURL),argv);
 
-  printf("%s", cmd);
+  printf("%s\n", cmd);
   system(cmd);
 
   free(cmd); 
 }
 
-Vector *vec_make(){
-    Vector *v;
-    v = (Vector*)malloc(sizeof(Vector));
-    if(v){
-        v->size = 0;
-        v->capacity=16;
-        v->array=(Type*)realloc(NULL, sizeof(Type)*(v->capacity += 16));
-    }
-    return v;
-}
-
-void vec_add(Vector *v, Type value){
-    v->array[v->size] = value;
-    if(++v->size == v->capacity){
-        v->array=(Type*)realloc(v->array, sizeof(Type)*(v->capacity += 16));
-        if(!v->array){
-            perror("memory not enough");
-            exit(-1);
-        }
-    }
-}
-
-void vec_reset(Vector *v){
+Vector *vec_make(void) {
+  Vector *v;
+  v = (Vector*)malloc(sizeof(Vector));
+  if(v){
     v->size = 0;
+    v->capacity=16;
+    v->array=(Type*)realloc(NULL, sizeof(Type)*(v->capacity += 16));
+  }
+  return v;
 }
 
-size_t vec_size(Vector *v){
-    return v->size;
+void vec_add(Vector *v, Type value) {
+  v->array[v->size] = value;
+  if(++v->size == v->capacity){
+      v->array=(Type*)realloc(v->array, sizeof(Type)*(v->capacity += 16));
+      if(!v->array){
+          perror("memory not enough");
+          exit(-1);
+      }
+  }
 }
 
-Type *vec_getArray(Vector *v){
-    return v->array;
+void vec_reset(Vector *v) {
+  v->size = 0;
 }
 
-void vec_free(Vector *v){
-    free(v->array);
-    free(v);
+size_t vec_size(Vector *v) {
+  return v->size;
 }
 
-char *fin(FILE *fp){
-    static Vector *v = NULL;
-    int ch;
+Type *vec_getArray(Vector *v) {
+  return v->array;
+}
 
-    if(v == NULL) v = vec_make();
-    vec_reset(v);
-    while(EOF!=(ch=fgetc(fp))){
-        if(isspace(ch)) continue;
-        while(!isspace(ch)){
-            vec_add(v, ch);
-            if(EOF == (ch = fgetc(fp)))break;
-        }
-        vec_add(v, '\0');
-        break;
+void vec_free(Vector *v) {
+  free(v->array);
+  free(v);
+}
+
+char *fin(FILE *fp) {
+  static Vector *v = NULL;
+  int ch;
+
+  if(v == NULL) v = vec_make();
+  vec_reset(v);
+  while(EOF!=(ch=fgetc(fp))){
+    if(isspace(ch)) continue;
+    while(!isspace(ch)){
+        vec_add(v, ch);
+        if(EOF == (ch = fgetc(fp)))break;
     }
-    if(vec_size(v) != 0) return vec_getArray(v);
-    vec_free(v);
-    v = NULL;
-    return NULL;
+    vec_add(v, '\0');
+    break;
+  }
+  if(vec_size(v) != 0) return vec_getArray(v);
+  vec_free(v);
+  v = NULL;
+  return NULL;
 }
 
 int extract(void) {
@@ -155,7 +124,7 @@ int extract(void) {
   html = fopen(HTML,"r");
   if (!html) return 1;
 
-  result = fopen("result.txt","w");
+  result = fopen("return.txt","w");
 
   char *wordp;
 
@@ -164,26 +133,23 @@ int extract(void) {
   while(NULL!=(wordp=fin(html))) {
     if(strcmp(wordp,HTML_TAG) == 0) {
       while(NULL!=(isdwordp=fin(html))) {
-        printf("%s",isdwordp);
+        printf("%s<-\n",isdwordp);
         fprintf(result,isdwordp);
-        if(strcmp(wordp,HTML_TAG) == 0) return 0;
+        if(strcmp(isdwordp,HTML_TAG_END) == 0) return 0;
       }
     }
   }
   #else
-  while(NULL!=(wordp=fin(html))){
+  while(NULL!=(wordp=fin(html)))
     printf("%s",wordp);
-    fprintf(result,wordp);
-  }
   #endif
 
   fclose(html);
-  fclose(result);
   return 0;
 }
 
 int main(int argc, char **argv) {
-  #ifdef _ENABLE_WGET_
+  #ifdef _ENABLE_CURL_
 
   if (argc == 1) {
     printf("url: ");
