@@ -38,14 +38,7 @@ struct conf {
   bool enable_print;
 };
 
-//void push_node(List *l, char v);
-//int count_nodes(Node *n);
-//void output_list(Node *n);
-//List *create_list(void);
-
 int get_source_file(WSCONF cnfg);
-//List *get_url(List *l);
-//char *get_str(List *l);
 void get_file(char *argv);
 
 #endif
