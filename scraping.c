@@ -57,95 +57,44 @@ void got_file(char *argv) {
   free(cmd); 
 }
 
-Vector *vec_make(void) {
-  Vector *v;
-  v = (Vector*)malloc(sizeof(Vector));
-  if(v){
-    v->size = 0;
-    v->capacity=16;
-    v->array=(Type*)realloc(NULL, sizeof(Type)*(v->capacity += 16));
-  }
-  return v;
-}
-
-void vec_add(Vector *v, Type value) {
-  v->array[v->size] = value;
-  if(++v->size == v->capacity){
-      v->array=(Type*)realloc(v->array, sizeof(Type)*(v->capacity += 16));
-      if(!v->array){
-          perror("memory not enough");
-          exit(-1);
-      }
-  }
-}
-
-void vec_reset(Vector *v) {
-  v->size = 0;
-}
-
-size_t vec_size(Vector *v) {
-  return v->size;
-}
-
-Type *vec_getArray(Vector *v) {
-  return v->array;
-}
-
-void vec_free(Vector *v) {
-  free(v->array);
-  free(v);
-}
-
-char *fin(FILE *fp) {
-  static Vector *v = NULL;
-  int ch;
-
-  if(v == NULL) v = vec_make();
-  vec_reset(v);
-  while(EOF!=(ch=fgetc(fp))){
-    if(isspace(ch)) continue;
-    while(!isspace(ch)){
-        vec_add(v, ch);
-        if(EOF == (ch = fgetc(fp)))break;
-    }
-    vec_add(v, '\0');
-    break;
-  }
-  if(vec_size(v) != 0) return vec_getArray(v);
-  vec_free(v);
-  v = NULL;
-  return NULL;
-}
-
 int extract(void) {
   FILE *html;
-  FILE *result;
+  char c;
 
   html = fopen(HTML,"r");
   if (!html) return 1;
 
-  result = fopen("return.txt","w");
-
-  char *wordp;
-
   #ifdef HTML_TAG
-  char *isdwordp;
-  while(NULL!=(wordp=fin(html))) {
-    if(strcmp(wordp,HTML_TAG) == 0) {
-      while(NULL!=(isdwordp=fin(html))) {
-        printf("%s<-\n",isdwordp);
-        fprintf(result,isdwordp);
-        if(strcmp(isdwordp,HTML_TAG_END) == 0) return 0;
-      }
+
+  while ((c = getc(html)) != EOF) {
+    size_t i;
+
+    for (i = 0; i < strlen(HTML_TAG); i++, c = getc(html)) 
+      if (c != HTML_TAG[i] || c == EOF) break;
+
+    if (i == strlen(HTML_TAG)) {
+      while ((c = getc(html)) != EOF) {
+        size_t j;
+
+        putchar(c);
+        
+        for (j = 0; j < strlen(HTML_TAG_END); j++, c = getc(html)) 
+          if (c != HTML_TAG_END[j] || c == EOF) break;
+
+        if (j == strlen(HTML_TAG_END)) break;
+      } 
     }
   }
+
   #else
-  while(NULL!=(wordp=fin(html)))
-    printf("%s",wordp);
-  #endif
+
+  while ((c = getc(html)) != EOF)
+    putchar(c);
+
+  #endif  
 
   fclose(html);
-  return 0;
+  return 0;   
 }
 
 int main(int argc, char **argv) {
