@@ -1,42 +1,51 @@
+/*
+ * Simple program for web scraping with C
+ * (Leonardo Zamboni leozamboni.dev)
+ *
+ * this program is free software: you can redistribute it and/or modify
+ * it under the terms of the gnu general public license as published by
+ * the free software foundation, either version 3 of the license, or
+ * (at your option) any later version.
+ * 
+ * this program is distributed in the hope that it will be useful,
+ * but without any warranty; without even the implied warranty of
+ * merchantability or fitness for a particular purpose.  see the
+ * gnu general public license for more details.
+ * 
+ * you should have received a copy of the gnu general public license
+ * along with this program.  if not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef SCRAPING_H
 #define SCRAPING_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
-#define _ENABLE_CURL_ 
+#define SET_CURL
 
-#define HTML_TAG "<li class"
-#define HTML_TAG_END "</li>"
+#define GET_FILE "get.txt"
+#define SET_FILE "set.txt"
 
-#define HTML "index.txt"
-
-#ifdef _ENABLE_CURL_  
-  #define CURL "curl --output index.txt "
+#ifdef SET_CURL  
+  #define CURL "curl --output get.txt "
 #endif
 
-typedef struct node Node;
+typedef struct conf WSCONF;
 
-struct node {
-  char value;
-  Node *next;
+struct conf {
+  char *string_init;
+  char *string_end;
+  bool enable_print;
 };
 
-typedef struct list List; 
+//void push_node(List *l, char v);
+//int count_nodes(Node *n);
+//void output_list(Node *n);
+//List *create_list(void);
 
-struct list {
-  Node *nodes;
-  Node *head;
-};
-
-int extract(void);
-
-void push_node(List *l, char v);
-int count_nodes(Node *n);
-void output_list(Node *n);
-List *create_list(void);
-
-List *get_url(List *l);
-char *get_str(List *l);
-void got_file(char *argv);
+int get_source_file(WSCONF cnfg);
+//List *get_url(List *l);
+//char *get_str(List *l);
+void get_file(char *argv);
 
 #endif

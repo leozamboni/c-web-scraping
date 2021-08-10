@@ -1,16 +1,12 @@
-# GNU Web Scraping
-Web scraping with C 
-## Building
 ```
+GNU Web Scraping
+
+building:
+
 gcc -o scraping scraping.c
-```
-## Run
-```
-./scraping <link>
-```
-## Tag
-For get specific tag
-```
-#define HTML_TAG "<tag>"
-#define HTML_TAG_END "</tag>"
+
+Get specific tag set the WSCONF struct:
+
+string_init = "<body>";
+string_end = "</body>";
 ```

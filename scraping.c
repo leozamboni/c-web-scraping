@@ -1,52 +1,26 @@
+/*
+ * Simple program for web scraping with C
+ * (Leonardo Zamboni leozamboni.dev)
+ *
+ * this program is free software: you can redistribute it and/or modify
+ * it under the terms of the gnu general public license as published by
+ * the free software foundation, either version 3 of the license, or
+ * (at your option) any later version.
+ * 
+ * this program is distributed in the hope that it will be useful,
+ * but without any warranty; without even the implied warranty of
+ * merchantability or fitness for a particular purpose.  see the
+ * gnu general public license for more details.
+ * 
+ * you should have received a copy of the gnu general public license
+ * along with this program.  if not, see <http://www.gnu.org/licenses/>.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "scraping.h" 
 
-List *create_list(void) {
-  List *l = (List *) malloc(sizeof(List));
-  l->nodes = l->head = NULL;
-  return l;
-}
-
-void push_node(List *l, char v) {
-  Node *new = (Node *) malloc(sizeof(Node));
-  if (!l->head) l->head = new;
-  else l->nodes->next = new;
-  new->value = v;
-  new->next = NULL;
-  l->nodes = new;
-}
-
-int count_nodes(Node *n) {
-  if (!n) return 0;
-  return 1 + count_nodes(n->next);
-}
-
-List *get_url(List *l) {
-  char c = getchar();
-  if (c == '\n') return l;
-  push_node(l,c);
-  get_url(l);
-} 
-
-void output_list(Node *n) {
-  if (!n) return;
-  printf("%c", n->value);
-  output_list(n->next);
-}
-
-char *get_str(List *l) {
-  Node *w = l->head;
-  char *str = (char *) malloc((count_nodes(w)-1) * sizeof(char));
-
-  for (size_t i = 0; w; w = w->next) 
-    str[i++] = w->value;
-
-  return str;
-}
-
-void got_file(char *argv) {
+void get_file(char *argv) {
   char *cmd = (char *) malloc(strlen(CURL) + strlen(argv));
   strcat(strcpy(cmd,CURL),argv);
 
@@ -56,58 +30,47 @@ void got_file(char *argv) {
   free(cmd); 
 }
 
-int extract(void) {
-  FILE *html;
+int get_source_file(WSCONF cnfg) {
+  FILE *getfp;
+  FILE *setfp;
+
+  getfp = fopen(GET_FILE,"r");
+  if (!getfp) return 1;
+
+  setfp = fopen(SET_FILE,"w");
+
   char c;
+  if (cnfg.string_init) {
 
-  html = fopen(HTML,"r");
-  if (!html) return 1;
+    while ((c = getc(getfp)) != EOF) {
+      size_t i;
 
-  #ifdef HTML_TAG
+      for (i = 0; i < strlen(cnfg.string_init); i++, c = getc(getfp)) 
+        if (c != cnfg.string_init[i] || c == EOF) break;
 
-  while ((c = getc(html)) != EOF) {
-    size_t i;
+      if (i == strlen(cnfg.string_init)) {
+        while ((c = getc(getfp)) != EOF) {
+          size_t j;
+    
+          if (cnfg.enable_print)
+            putchar(c);
 
-    for (i = 0; i < strlen(HTML_TAG); i++, c = getc(html)) 
-      if (c != HTML_TAG[i] || c == EOF) break;
+          fprintf(setfp,"%c",c);  
+          for (j = 0; j < strlen(cnfg.string_end); j++, c = getc(getfp)) 
+            if (c != cnfg.string_end[j] || c == EOF) break;
 
-    if (i == strlen(HTML_TAG)) {
-      while ((c = getc(html)) != EOF) {
-        size_t j;
-
-        putchar(c);
-        
-        for (j = 0; j < strlen(HTML_TAG_END); j++, c = getc(html)) 
-          if (c != HTML_TAG_END[j] || c == EOF) break;
-
-        if (j == strlen(HTML_TAG_END)) break;
-      } 
+          if (j == strlen(cnfg.string_end)) { fprintf(setfp,"\n"); break; }
+        } 
+      }
     }
+
+  }
+  else {
+    while ((c = getc(getfp)) != EOF)
+      putchar(c);
   }
 
-  #else
-
-  while ((c = getc(html)) != EOF)
-    putchar(c);
-
-  #endif  
-
-  fclose(html);
+  fclose(setfp);
+  fclose(getfp);
   return 0;   
-}
-
-int main(int argc, char **argv) {
-  #ifdef _ENABLE_CURL_
-
-  if (argc == 1) {
-    printf("url: ");
-    got_file(get_str(get_url(create_list()))); 
-  }
-  else got_file(argv[1]);
-
-  #endif
-
-  if (extract()) printf("Could not open HTML file\n");
-
-  return 0;
 }
