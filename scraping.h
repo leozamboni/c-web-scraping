@@ -1,6 +1,6 @@
 /*
- * Simple program for web scraping with C
- * (Leonardo Zamboni leozamboni.dev)
+ * Web Scraping C 
+ * Copyright © 2021 💻 Leonardo Zamboni - leozamboni.dev
  *
  * this program is free software: you can redistribute it and/or modify
  * it under the terms of the gnu general public license as published by
