@@ -23,11 +23,11 @@
 
 #define SET_CURL
 
-#define GET_FILE "get.txt"
-#define SET_FILE "set.txt"
+#define GET_FILE "getpage.txt"
+#define SOURCE_FILE "source.txt"
 
 #ifdef SET_CURL  
-  #define CURL "curl --output get.txt "
+  #define CURL "curl --output getpage.txt "
 #endif
 
 typedef struct conf WSCONF;

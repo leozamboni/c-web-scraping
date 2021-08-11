@@ -31,46 +31,47 @@ void get_file(char *argv) {
 }
 
 int get_source_file(WSCONF cnfg) {
-  FILE *getfp;
-  FILE *setfp;
+  FILE *getfl;
+  FILE *srcfl;
 
-  getfp = fopen(GET_FILE,"r");
-  if (!getfp) return 1;
+  getfl = fopen(GET_FILE,"r");
+  if (!getfl) return 1;
 
-  setfp = fopen(SET_FILE,"w");
+  srcfl = fopen(SOURCE_FILE,"w");
 
   char c;
   if (cnfg.string_init) {
 
-    while ((c = getc(getfp)) != EOF) {
+    while ((c = getc(getfl)) != EOF) {
       size_t i;
 
-      for (i = 0; i < strlen(cnfg.string_init); i++, c = getc(getfp)) 
+      for (i = 0; i < strlen(cnfg.string_init); i++, c = getc(getfl)) 
         if (c != cnfg.string_init[i] || c == EOF) break;
 
       if (i == strlen(cnfg.string_init)) {
-        while ((c = getc(getfp)) != EOF) {
+        while ((c = getc(getfl)) != EOF) {
           size_t j;
     
           if (cnfg.enable_print)
             putchar(c);
 
-          fprintf(setfp,"%c",c);  
-          for (j = 0; j < strlen(cnfg.string_end); j++, c = getc(getfp)) 
+          fprintf(srcfl,"%c",c);  
+          for (j = 0; j < strlen(cnfg.string_end); j++, c = getc(getfl)) 
             if (c != cnfg.string_end[j] || c == EOF) break;
 
-          if (j == strlen(cnfg.string_end)) { fprintf(setfp,"\n"); break; }
+          if (j == strlen(cnfg.string_end)) { fprintf(srcfl,"\n"); break; }
         } 
       }
     }
 
   }
   else {
-    while ((c = getc(getfp)) != EOF)
+    while ((c = getc(getfl)) != EOF)
       putchar(c);
   }
 
-  fclose(setfp);
-  fclose(getfp);
+  fclose(srcfl);
+  fclose(getfl);
+  remove(GET_FILE);
   return 0;   
 }
