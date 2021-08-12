@@ -1,6 +1,6 @@
 /*
  * Web Scraping C 
- * Copyright © 2021 💻 Leonardo Zamboni - leozamboni.dev
+ * Copyright © 2021 Leonardo Zamboni 🌎 leozamboni.dev
  *
  * this program is free software: you can redistribute it and/or modify
  * it under the terms of the gnu general public license as published by
@@ -38,7 +38,29 @@ struct conf {
   bool enable_print;
 };
 
-int get_source_file(WSCONF cnfg);
+typedef struct node Node;
+
+struct node {
+  char c;
+  Node *n;
+};
+
+typedef struct queue Queue;
+
+struct queue {
+  Node *f;
+  Node *b;
+};
+
+/* Queue functions */
+Queue *create_queue(void);
+void push_queue(Queue *q, char c);
+void output_queue(Node *f);
+int count_nodes_queue(Node *f);
+char *get_str(Node *f);
+
+/* Scraping functions */
+char *get_source(WSCONF cnfg);
 void get_file(char *argv);
 
 #endif
