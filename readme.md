@@ -1,5 +1,5 @@
 ```
-GNU Web Scraping
+Web Scraping
 
 building:
 

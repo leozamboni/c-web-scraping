@@ -18,97 +18,91 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "scraping.h" 
 
 Queue *create_queue(void) {
-  Queue *q = (Queue *) malloc(sizeof(Queue));
-  q->f = q->b = NULL;
-  return q;
+	Queue *q = (Queue *) malloc(sizeof(Queue));
+  	q->f = q->b = NULL;
+  	return q;
 }
 
 void push_queue(Queue *q, char c) {
-  Node *new = (Node *) malloc(sizeof(Node));
-  new->c = c;
-  new->n = NULL;
-  if (!q->f) q->f = new;
-  else q->b->n = new;
-  q->b = new;
+  	Node *new = (Node *) malloc(sizeof(Node));
+  	new->c = c;
+  	new->n = NULL;
+  	if (!q->f) q->f = new;
+  	else q->b->n = new;
+  	q->b = new;
 }
 
 void output_queue(Node *f) {
-  if (!f) return;
-  printf("%c",f->c);
-  output_queue(f->n);
+  	if (!f) return;
+  	printf("%c",f->c);
+  	output_queue(f->n);
 }
 
 int count_nodes_queue(Node *f) {
-  if (!f) return 0;
-  return 1 + count_nodes_queue(f->n);
+  	if (!f) return 0;
+  	return 1 + count_nodes_queue(f->n);
 }
 
 char *get_str(Node *f) {
-  char *str = (char *) malloc(count_nodes_queue(f) * sizeof(char));
+  	char *str = (char *) malloc(count_nodes_queue(f) * sizeof(char));
 
-  size_t i;
-  for (i = 0; f; f = f->n) 
-    str[i++] = f->c;
+  	size_t i;
+  	for (i = 0; f; f = f->n) 
+    		str[i++] = f->c;
 
-  str[i] = '\0';
-  return str;
+ 	str[i] = '\0';
+  	return str;
 }
 
 void get_file(char *argv) {
-  char *cmd = (char *) malloc(strlen(CURL) + strlen(argv));
-  strcat(strcpy(cmd,CURL),argv);
+  	char *cmd = (char *) malloc(strlen(CURL) + strlen(argv));
+  	strcat(strcpy(cmd,CURL),argv);
 
-  printf("%s\n", cmd);
-  system(cmd);
+  	printf("%s\n", cmd);
+  	system(cmd);
 
-  free(cmd); 
+  	free(cmd); 
+}
+
+uint8_t is_tag(FILE *fl, char *str, char c) {
+	if (*str == '\0') return 1;
+	if (c != *str || c == EOF) return 0;
+	*str++;
+	is_tag(fl, str, getc(fl));
 }
 
 char *get_source(WSCONF cnfg) {
-  Queue *srcq = create_queue();
-  FILE *getfl;
+  	Queue *srcq = create_queue();
+  	FILE *getfl;
 
-  getfl = fopen(GET_FILE,"r");
-  if (!getfl) return NULL;
+  	getfl = fopen(GET_FILE,"r");
+  	if (!getfl) return NULL;
 
-  char c;
-  if (cnfg.string_init) {
+  	char c;
+  	if (cnfg.string_init) {
 
-    while ((c = getc(getfl)) != EOF) {
-      size_t i;
-      for (i = 0; i < strlen(cnfg.string_init); i++) 
-        if (c != cnfg.string_init[i] || c == EOF) break;
-        else c = getc(getfl);
+    		while ((c = getc(getfl)) != EOF) {
+      			if (is_tag(getfl, cnfg.string_init, c)) {
+        			while ((c = getc(getfl)) != EOF) {  
+					if (is_tag(getfl, cnfg.string_end, c)) { push_queue(srcq,'\n'); break;}
+	        			if (cnfg.enable_print) putchar(c);
+          				push_queue(srcq,c); 
+				} 
+				if (cnfg.enable_print) puts("");
+      			}
+    		}
 
-      if (i == strlen(cnfg.string_init)) {
+  	}
+  	else {
+    		while ((c = getc(getfl)) != EOF)
+      			putchar(c);
+  	}
 
-        while ((c = getc(getfl)) != EOF) {
-          size_t j;
-          for (j = 0; j < strlen(cnfg.string_end); j++) 
-            if (c != cnfg.string_end[j] || c == EOF) break;
-            else c = getc(getfl);
-
-          if (j == strlen(cnfg.string_end)) { push_queue(srcq,'\n'); break; }
-    
-          if (cnfg.enable_print) putchar(c);
-
-          push_queue(srcq,c); 
-        } 
-        
-        puts("");
-      }
-    }
-
-  }
-  else {
-    while ((c = getc(getfl)) != EOF)
-      putchar(c);
-  }
-
-  fclose(getfl);
-  remove(GET_FILE);
-  return get_str(srcq->f);   
+  	fclose(getfl);
+  	remove(GET_FILE);
+  	return get_str(srcq->f);   
 }
