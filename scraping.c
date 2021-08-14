@@ -51,10 +51,10 @@ char *get_str(Node *f) {
   	char *str = (char *) malloc(count_nodes_queue(f) * sizeof(char));
 
   	size_t i;
-  	for (i = 0; f; f = f->n) 
-    		str[i++] = f->c;
+  	for (i = 0; f; f = f->n, ++i) 
+    		str[i] = f->c;
 
- 	str[i] = '\0';
+ 	str[i+1] = '\0';
   	return str;
 }
 
