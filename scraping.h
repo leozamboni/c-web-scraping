@@ -19,7 +19,7 @@
 #define SCRAPING_H
 
 #include <stdio.h>
-#include <stdbool.h>
+#include <stdint.h>
 
 #define SET_CURL
 
@@ -35,7 +35,7 @@ typedef struct conf WSCONF;
 struct conf {
   char *string_init;
   char *string_end;
-  bool enable_print;
+  uint8_t enable_print;
 };
 
 typedef struct node Node;
