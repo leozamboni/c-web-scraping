@@ -49,8 +49,8 @@ int count_nodes_queue(Node *f) {
 
 char *get_str(Node *f) {
   	char *str = (char *) malloc(count_nodes_queue(f) * sizeof(char));
-
-  	size_t i;
+  	
+	size_t i;
   	for (i = 0; f; f = f->n, ++i) 
     		str[i] = f->c;
 
@@ -61,11 +61,8 @@ char *get_str(Node *f) {
 void get_file(char *argv) {
   	char *cmd = (char *) malloc(strlen(CURL) + strlen(argv));
   	strcat(strcpy(cmd,CURL),argv);
-
-  	printf("%s\n", cmd);
-  	system(cmd);
-
-  	free(cmd); 
+	system(cmd);
+	free(cmd); 
 }
 
 uint8_t is_tag(FILE *fl, char *str, char c) {
@@ -83,24 +80,17 @@ char *get_source(WSCONF cnfg) {
   	if (!getfl) return NULL;
 
   	char c;
-  	if (cnfg.string_init) {
-
-    		while ((c = getc(getfl)) != EOF) {
-      			if (is_tag(getfl, cnfg.string_init, c)) {
-        			while ((c = getc(getfl)) != EOF) {  
-					if (is_tag(getfl, cnfg.string_end, c)) { push_queue(srcq,'\n'); break;}
-	        			if (cnfg.enable_print) putchar(c);
-          				push_queue(srcq,c); 
-				} 
-				if (cnfg.enable_print) puts("");
-      			}
-    		}
-
-  	}
-  	else {
-    		while ((c = getc(getfl)) != EOF)
-      			putchar(c);
-  	}
+    	while ((c = getc(getfl)) != EOF) {
+      		if (is_tag(getfl, cnfg.string_init, c)) {
+        		while ((c = getc(getfl)) != EOF) {  
+				if (is_tag(getfl, cnfg.string_end, c)) break;
+	       			if (cnfg.enable_print) putchar(c);
+        				push_queue(srcq,c); 
+			} 
+			push_queue(srcq,'\n'); 
+			if (cnfg.enable_print) puts("");
+      		}
+    	}
 
   	fclose(getfl);
   	remove(GET_FILE);
