@@ -85,7 +85,7 @@ char *get_source(WSCONF cnfg) {
         		while ((c = getc(getfl)) != EOF) {  
 				if (is_tag(getfl, cnfg.string_end, c)) break;
 	       			if (cnfg.enable_print) putchar(c);
-        				push_queue(srcq,c); 
+        			push_queue(srcq,c); 
 			} 
 			push_queue(srcq,'\n'); 
 			if (cnfg.enable_print) puts("");
