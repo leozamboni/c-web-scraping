@@ -1,12 +1,8 @@
-```
 Web Scraping
-
-building:
 
 gcc -o scraping scraping.c
 
-Get specific tag set the WSCONF struct:
+Set WSCONF struct:
 
-string_init = "<body>";
-string_end = "</body>";
-```
+start_block = "<tag>";
+end_block = "</tag>";
