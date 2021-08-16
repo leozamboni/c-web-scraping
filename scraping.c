@@ -76,14 +76,14 @@ char *get_source(WSCONF cnfg) {
   	Queue *srcq = create_queue();
   	FILE *getfl;
 
-  	getfl = fopen(GET_FILE,"r");
+  	getfl = fopen(HTML_PAGE,"r");
   	if (!getfl) return NULL;
 
   	char c;
     	while ((c = getc(getfl)) != EOF) {
-      		if (is_tag(getfl, cnfg.string_init, c)) {
+      		if (is_tag(getfl, cnfg.start_block, c)) {
         		while ((c = getc(getfl)) != EOF) {  
-				if (is_tag(getfl, cnfg.string_end, c)) break;
+				if (is_tag(getfl, cnfg.end_block, c)) break;
 	       			if (cnfg.enable_print) putchar(c);
         			push_queue(srcq,c); 
 			} 
@@ -93,6 +93,6 @@ char *get_source(WSCONF cnfg) {
     	}
 
   	fclose(getfl);
-  	remove(GET_FILE);
+  	remove(HTML_PAGE);
   	return get_str(srcq->f);   
 }

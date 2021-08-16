@@ -21,35 +21,29 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define SET_CURL
-
-#define GET_FILE "getpage.txt"
-#define SOURCE_FILE "source.txt"
-
-#ifdef SET_CURL  
-  #define CURL "curl --output getpage.txt "
-#endif
+#define HTML_PAGE "source.html"
+#define CURL "curl --silent --output source.html "
 
 typedef struct conf WSCONF;
 
 struct conf {
-  char *string_init;
-  char *string_end;
-  uint8_t enable_print;
+  	char *start_block;
+  	char *end_block;
+  	uint8_t enable_print;
 };
 
 typedef struct node Node;
 
 struct node {
-  char c;
-  Node *n;
+  	char c;
+  	Node *n;
 };
 
 typedef struct queue Queue;
 
 struct queue {
-  Node *f;
-  Node *b;
+  	Node *f;
+  	Node *b;
 };
 
 /* Queue functions */
