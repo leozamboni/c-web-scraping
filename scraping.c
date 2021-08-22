@@ -21,13 +21,15 @@
 #include <stdint.h>
 #include "scraping.h" 
 
-Queue *create_queue(void) {
+Queue *create_queue(void) 
+{
 	Queue *q = (Queue *) malloc(sizeof(Queue));
   	q->f = q->b = NULL;
   	return q;
 }
 
-void push_queue(Queue *q, char c) {
+void push_queue(Queue *q, char c) 
+{
   	Node *new = (Node *) malloc(sizeof(Node));
   	new->c = c;
   	new->n = NULL;
@@ -36,43 +38,70 @@ void push_queue(Queue *q, char c) {
   	q->b = new;
 }
 
-void output_queue(Node *f) {
+void output_queue(Node *f) 
+{
   	if (!f) return;
   	printf("%c",f->c);
   	output_queue(f->n);
 }
 
-int count_nodes_queue(Node *f) {
+uint16_t count_nodes(Node *f) 
+{
   	if (!f) return 0;
-  	return 1 + count_nodes_queue(f->n);
+  	return 1 + count_nodes(f->n);
 }
 
-char *get_str(Node *f) {
-  	char *str = (char *) malloc(count_nodes_queue(f) * sizeof(char));
+char *get_str(Node *f) 
+{
+  	char *str = (char *) malloc((count_nodes(f) + 1) * sizeof(char));
   	
 	size_t i;
   	for (i = 0; f; f = f->n, ++i) 
+	{
     		str[i] = f->c;
+	}
 
  	str[i+1] = '\0';
   	return str;
 }
 
-void get_file(char *argv) {
+void get_file(char *argv) 
+{
   	char *cmd = (char *) malloc(strlen(CURL) + strlen(argv));
+
   	strcat(strcpy(cmd,CURL),argv);
+
 	system(cmd);
+
 	free(cmd); 
 }
 
-uint8_t is_tag(FILE *fl, char *str, char c) {
+uint8_t is_tag(FILE *fl, char *str, char c) 
+{
 	if (*str == '\0') return 1;
+
 	if (c != *str || c == EOF) return 0;
+
 	*str++;
+
 	is_tag(fl, str, getc(fl));
 }
 
-char *get_source(WSCONF cnfg) {
+void get_block(WSCONF cnfg, FILE *getfl, Queue *srcq, char c)
+{
+	if (c == EOF || is_tag(getfl, cnfg.end_block, c)) return;
+
+	if (cnfg.enable_print) putchar(c);
+
+	push_queue(srcq, c);
+
+	c = getc(getfl);
+
+	get_block(cnfg, getfl, srcq, c);
+}
+
+char *get_source(WSCONF cnfg) 
+{
   	Queue *srcq = create_queue();
   	FILE *getfl;
 
@@ -80,19 +109,21 @@ char *get_source(WSCONF cnfg) {
   	if (!getfl) return NULL;
 
   	char c;
-    	while ((c = getc(getfl)) != EOF) {
-      		if (is_tag(getfl, cnfg.start_block, c)) {
-        		while ((c = getc(getfl)) != EOF) {  
-				if (is_tag(getfl, cnfg.end_block, c)) break;
-	       			if (cnfg.enable_print) putchar(c);
-        			push_queue(srcq,c); 
-			} 
+    	while ((c = getc(getfl)) != EOF) 
+	{
+      		if (is_tag(getfl, cnfg.start_block, c)) 
+		{
+			get_block(cnfg, getfl, srcq, getc(getfl));
+
 			push_queue(srcq,'\n'); 
+
 			if (cnfg.enable_print) puts("");
       		}
     	}
 
   	fclose(getfl);
+
   	remove(HTML_PAGE);
+
   	return get_str(srcq->f);   
 }

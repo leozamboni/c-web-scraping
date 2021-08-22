@@ -50,7 +50,7 @@ struct queue {
 Queue *create_queue(void);
 void push_queue(Queue *q, char c);
 void output_queue(Node *f);
-int count_nodes_queue(Node *f);
+uint16_t count_nodes(Node *f);
 char *get_str(Node *f);
 
 /* Scraping functions */
