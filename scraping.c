@@ -81,21 +81,21 @@ uint8_t is_tag(FILE *fl, char *str, char c)
 	if (*str == '\0') return 1;
 
 	if (c != *str || c == EOF) return 0;
-
+	 
 	*str++;
 
-	is_tag(fl, str, getc(fl));
+	is_tag(fl, str, fgetc(fl));
 }
 
-void get_block(WSCONF cnfg, FILE *getfl, Queue *srcq, char c)
+char get_block(WSCONF cnfg, FILE *getfl, Queue *srcq, char c)
 {
-	if (c == EOF || is_tag(getfl, cnfg.end_block, c)) return;
+	if (c == EOF || is_tag(getfl, cnfg.end_block, c)) return c;
 
 	if (cnfg.enable_print) putchar(c);
 
 	push_queue(srcq, c);
 
-	c = getc(getfl);
+	c = fgetc(getfl);
 
 	get_block(cnfg, getfl, srcq, c);
 }
@@ -109,11 +109,11 @@ char *get_source(WSCONF cnfg)
   	if (!getfl) return NULL;
 
   	char c;
-    	while ((c = getc(getfl)) != EOF) 
+    	while ((c = fgetc(getfl)) != EOF) 
 	{
       		if (is_tag(getfl, cnfg.start_block, c)) 
 		{
-			get_block(cnfg, getfl, srcq, getc(getfl));
+			get_block(cnfg, getfl, srcq, fgetc(getfl));
 
 			push_queue(srcq,'\n'); 
 
