@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define HTML_PAGE "source.html"
 #define CURL "curl --silent --output source.html "
 
 typedef struct conf WSCONF;
