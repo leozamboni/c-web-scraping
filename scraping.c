@@ -76,52 +76,52 @@ void get_file(char *argv)
 	free(cmd); 
 }
 
-uint8_t is_tag(FILE *fl, char *str, char c) 
+char *get_block(WSCONF conf) 
 {
-	if (*str == '\0') return 1;
+	Queue *src_q = create_queue();
 
-	if (c != *str++ || c == EOF) return 0;
-	 
-	return is_tag(fl, str, getc(fl));
-}
-
-char get_block(WSCONF cnfg, FILE *getfl, Queue *srcq, char c)
-{
-	if (c == EOF || is_tag(getfl, cnfg.end_block, c)) return c;
-
-	if (cnfg.enable_print) putchar(c);
-
-	push_queue(srcq, c);
-
-	return get_block(cnfg, getfl, srcq, getc(getfl));
-}
-
-char *get_source(WSCONF cnfg) 
-{
-  	Queue *srcq = create_queue();
-  	FILE *getfl;
-
-  	getfl = fopen(HTML_PAGE,"r");
-  	if (!getfl) return NULL;
+	FILE *fl = fopen("source.html", "r");
+	if (!fl) exit(EXIT_FAILURE);
 
 	char c;
-    	while (c != EOF) 
+	while (c != EOF)
 	{
-		c = getc(getfl);
+		c = getc(fl);
 
-      		if (is_tag(getfl, cnfg.start_block, c)) 
+		if (c == conf.start_block[0])
 		{
-			get_block(cnfg, getfl, srcq, getc(getfl));
-			
-			push_queue(srcq,'\n'); 
+			size_t i = 0;
+			for (i = 1; i < strlen(conf.start_block); ++i) 
+			{
+				c = getc(fl);
+				if (c != conf.start_block[i]) break;
+			}
 
-			if (cnfg.enable_print) puts("");
-      		}
-    	}
+			if (i == strlen(conf.start_block)) 
+			{
+				while (c != EOF)
+				{
+					c = getc(fl);
 
-  	fclose(getfl);
+					size_t j = 0;
+					if (c == conf.end_block[0])
+					{
+						for (j = 1; j < strlen(conf.end_block); ++j) 
+						{	
+							c = getc(fl);
 
-  	remove(HTML_PAGE);
+							if (c != conf.end_block[j]) break;
+						}
+					}
+					if (j == strlen(conf.end_block)) break;
 
-  	return get_str(srcq->f);   
+					push_queue(src_q, c);
+				}
+
+				push_queue(src_q, '\n');
+			}
+		}
+	}
+
+  	return get_str(src_q->f);   
 }

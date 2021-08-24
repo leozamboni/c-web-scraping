@@ -54,7 +54,7 @@ uint16_t count_nodes(Node *f);
 char *get_str(Node *f);
 
 /* Scraping functions */
-char *get_source(WSCONF cnfg);
+char *get_block(WSCONF cnfg);
 void get_file(char *argv);
 
 #endif
