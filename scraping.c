@@ -123,5 +123,9 @@ char *get_block(WSCONF conf)
 		}
 	}
 
+	fclose(fl);
+	
+	remove("source.html");
+	
   	return get_str(src_q->f);   
 }
